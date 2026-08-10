@@ -148,6 +148,27 @@ class PostgresExpenseDB(ExpenseDB):
         cur.close()
         return rows
 
+    def monthly_spending_by_category(self, year, month):
+        cur = self.conn.cursor()
+
+        cur.execute("""
+            SELECT category,
+                   COUNT(*) AS count,
+                   SUM(amount) AS total,
+                   AVG(amount) AS average
+            FROM expenses
+            WHERE EXTRACT(YEAR FROM date) = %s
+              AND EXTRACT(MONTH FROM date) = %s
+            GROUP BY category
+            ORDER BY total DESC
+        """, (year, month))
+
+        rows = cur.fetchall()
+        columns = [desc[0] for desc in cur.description]
+        cur.close()
+
+        return [dict(zip(columns, row)) for row in rows]
+    
     def close(self):
         if self.conn:
             self.conn.close()

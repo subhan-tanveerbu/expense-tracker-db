@@ -144,6 +144,24 @@ class MySQLExpenseDB(ExpenseDB):
         cur.close()
         return rows
 
+    def monthly_spending_by_category(self, year, month):
+        cur = self.conn.cursor(dictionary=True)
+
+        cur.execute("""
+            SELECT category,
+                   COUNT(*) AS count,
+                   SUM(amount) AS total,
+                   AVG(amount) AS average
+            FROM expenses
+            WHERE YEAR(date) = %s AND MONTH(date) = %s
+            GROUP BY category
+            ORDER BY total DESC
+        """, (year, month))
+
+        rows = cur.fetchall()
+        cur.close()
+        return rows
+    
     def close(self):
         if self.conn:
             self.conn.close()

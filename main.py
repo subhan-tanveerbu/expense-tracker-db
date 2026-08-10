@@ -185,6 +185,38 @@ def date_range(db):
         return
     print_table(db.filter_by_date_range(start, end))
 
+def monthly_spending(db):
+    print("\n-- Monthly Spending by Category --")
+
+    year = input("Year (YYYY): ").strip()
+    month = input("Month (1-12): ").strip()
+
+    if not year.isdigit() or not month.isdigit():
+        print("Invalid year or month.")
+        return
+
+    year = int(year)
+    month = int(month)
+
+    if month < 1 or month > 12:
+        print("Month must be between 1 and 12.")
+        return
+
+    rows = db.monthly_spending_by_category(year, month)
+
+    if not rows:
+        print("No expenses found for that month.")
+        return
+
+    print(f"\nSpending for {year}-{month:02d}")
+
+    for r in rows:
+        print(
+            f"  {r['category']:<15} "
+            f"count={r['count']:<4} "
+            f"total={float(r['total']):.2f} "
+            f"avg={float(r['average']):.2f}"
+        )
 
 MENU = """
 ========== Expense Tracker (Database Edition) ==========
@@ -198,7 +230,8 @@ Current backend: {backend}
 7. Highest Expense
 8. Filter by Date Range
 9. Switch Database
-10. Exit
+10. Monthly Spending by Category
+11. Exit
 """
 
 
@@ -214,6 +247,7 @@ def main():
         "6": summary,
         "7": highest,
         "8": date_range,
+        "10": monthly_spending,
     }
 
     while True:
@@ -225,7 +259,8 @@ def main():
         elif choice == "9":
             db.close()
             db, backend_name = choose_backend()
-        elif choice == "10":
+
+        elif choice == "11":
             db.close()
             print("Goodbye!")
             sys.exit(0)

@@ -108,6 +108,24 @@ class SQLiteExpenseDB(ExpenseDB):
         )
         return [dict(row) for row in cur.fetchall()]
 
+    def monthly_spending_by_category(self, year, month):
+        cur = self.conn.cursor()
+        month_str = f"{int(month):02d}"
+        year_month = f"{year}-{month_str}"
+
+        cur.execute("""
+            SELECT category,
+                COUNT(*) AS count,
+                SUM(amount) AS total,
+                AVG(amount) AS average
+            FROM expenses
+            WHERE substr(date, 1, 7) = ?
+            GROUP BY category
+            ORDER BY total DESC
+        """, (year_month,))
+
+        return [dict(row) for row in cur.fetchall()]
+
     def close(self):
         if self.conn:
             self.conn.close()

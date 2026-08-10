@@ -64,6 +64,21 @@ class ExpenseDB(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def filter_by_date_range(self, start_date, end_date):
+        """Return expenses where start_date <= date <= end_date (YYYY-MM-DD)."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def monthly_spending_by_category(self, year, month):
+        """Return spending grouped by category for a specific month."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def close(self):
+        """Close the connection/client cleanly."""
+        raise NotImplementedError
+
+    @abstractmethod
     def close(self):
         """Close the connection/client cleanly."""
         raise NotImplementedError

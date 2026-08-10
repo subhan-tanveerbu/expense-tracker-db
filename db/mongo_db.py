@@ -113,6 +113,42 @@ class MongoExpenseDB(ExpenseDB):
         ).sort("date", ASCENDING)
         return [self._to_dict(d) for d in docs]
 
+    def monthly_spending_by_category(self, year, month):
+        prefix = f"{year}-{int(month):02d}"
+
+        pipeline = [
+            {
+                "$match": {
+                    "date": {
+                        "$regex": f"^{prefix}-"
+                    }
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$category",
+                    "count": {"$sum": 1},
+                    "total": {"$sum": "$amount"},
+                    "average": {"$avg": "$amount"}
+                }
+            },
+            {
+                "$sort": {"total": -1}
+            }
+        ]
+
+        rows = list(self.collection.aggregate(pipeline))
+
+        return [
+            {
+                "category": row["_id"],
+                "count": row["count"],
+                "total": row["total"],
+                "average": row["average"]
+            }
+            for row in rows
+        ]
+    
     def close(self):
         if self.client:
             self.client.close()
